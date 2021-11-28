@@ -23,10 +23,7 @@ type SyndeiaQuery {
   disciplines: [Discipline] @relationship(type: "Concerns", direction: OUT)
 
   authors: [Person]
-    @cypher( statement: """
-    MATCH (q:SyndeiaQuery)-[:CreatedByRole]->(e:EmploysInRole)-[:FillsRole]->(p:Person)
-    return p
-    """
+    @cypher( statement: "MATCH (q:SyndeiaQuery)-[:CreatedByRole]->(e:EmploysInRole)-[:FillsRole]->(p:Person) return p"
     )
 }
 
@@ -70,18 +67,13 @@ type Person {
   knows: [Person] @relationship(type: "Knows", direction: OUT)
 
   queries: Int
-    @cypher( statement: """
-    MATCH (q:SyndeiaQuery)-[:CreatedByRole]->(eir:EmploysInRole)-[:FillsRole]->(this)
-    return count(q)
-    """
+    @cypher( statement: "MATCH (q:SyndeiaQuery)-[:CreatedByRole]->(eir:EmploysInRole)-[:FillsRole]->(this) return count(q)"
     )
 }
 
 type Query
 {
   authors(): [Person]
-    @cypher( statement: """
-    MATCH (p:Person) WHERE { p.queries > 0 } RETURN p
-    """)
+    @cypher( statement: "MATCH (p:Person) WHERE { p.queries > 0 } RETURN p")
 }
 `
