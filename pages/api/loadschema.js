@@ -70,10 +70,4 @@ type Person {
     @cypher( statement: "MATCH (q:SyndeiaQuery)-[:CreatedByRole]->(eir:EmploysInRole)-[:FillsRole]->(this) return count(q)"
     )
 }
-
-type Query
-{
-  authors(): [Person]
-    @cypher( statement: "MATCH (p:Person) WHERE { p.queries > 0 } RETURN p")
-}
 `
