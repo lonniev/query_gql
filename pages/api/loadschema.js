@@ -2,14 +2,32 @@ import {gql} from "graphql-tag"
 
 export const typeDefs = 
 gql`
+scalar DateTime
+
 scalar URL
 scalar EmailAddress
 scalar PositiveFloat
 
-type Industry {
-  name: String!
-  description: String
-  companies: [Company] @relationship( type: "Member", direction: IN )
+type SyndeiaQuery {
+  title: String!
+  intent: String
+  expression: String
+
+  created: DateTime @timestamp(operations: [CREATE])
+  updated: DateTime @timestamp(operations: [CREATE, UPDATE])
+
+  createdByRole: [EmploysInRole] @relationship(type: "CreatedByRole", direction: OUT)
+  curatedBy: [Person]  @relationship(type: "CuratedBy", direction: OUT)
+  sharedWith: [Person] @relationship(type: "SharedWith", direction: OUT)
+
+  disciplines: [Discipline] @relationship(type: "Concerns", direction: OUT)
+
+  authors: [Person]
+    @cypher( statement: """
+    MATCH (q:SyndeiaQuery)-[:CreatedByRole]->(e:EmploysInRole)-[:FillsRole]->(p:Person)
+    return p
+    """
+    )
 }
 
 type Company {
@@ -17,23 +35,29 @@ type Company {
   description: String
   url: URL
 
-  industries: [Industry] @relationship( type: "Member", direction: OUT )
-  locations: [GeographicRegion] @relationship(type: "HasLocation", direction: OUT)
-  staffedRoles: [EmploysInRole]  @relationship(type: "HasStaffedRole", direction: OUT)
-  vendorOf: [Repository] @relationship(type: "VendorOf", direction: OUT)
+  staffedRoles: [EmploysInRole] @relationship(type: "HasStaffedRole", direction: OUT)
 }
 
-type GeographicRegion {
+type EmploysInRole {
   name: String!
   description: String
+
+  company: Company! @relationship(type: "Has", direction: IN)
+  role: Role! @relationship(type: "FilledRole", direction: OUT)
+  person: Person! @relationship(type: "FillsRole", direction: OUT)
 }
 
 type Role {
   name: String!
   description: String
 
-  where: [EmploysInRole] @relationship(type: "FilledRole", direction: IN)
-  who: [Person] @relationship(type: "HasRole", direction: IN)
+  instances: [EmploysInRole] @relationship(type: "FilledRole", direction: IN)
+  holders: [Person] @relationship(type: "HasRole", direction: IN)
+}
+
+type Discipline {
+  name: String!
+  description: String
 }
 
 type Person {
@@ -42,91 +66,22 @@ type Person {
   email: EmailAddress
   notes: String
 
-  worksIn: [GeographicRegion] @relationship(type: "WorksIn", direction: OUT)
+  fillsRole: [EmploysInRole] @relationship(type: "FillsRole", direction: OUT)
   knows: [Person] @relationship(type: "Knows", direction: OUT)
-  fillsRole: [EmploysInRole] @relationship(type: "FillsRole", direction: IN)
-  considers: [Product] @relationship(type: "Considering", direction: OUT)
+
+  queries: Int
+    @cypher( statement: """
+    MATCH (q:SyndeiaQuery)-[:CreatedByRole]->(eir:EmploysInRole)-[:FillsRole]->(this)
+    return count(q)
+    """
+    )
 }
 
-type EmploysInRole {
-  name: String!
-  description: String
-
-  company: Company @relationship(type: "Has", direction: IN)
-  role: Role! @relationship(type: "FilledRole", direction: IN)
-}
-
-type WebPage {
-  name: String!
-  description: String
-  retrieved: DateTime
-  published: DateTime
-  url: URL
-
-  relevantTo: [Person] @relationship(type: "Relevant", direction: OUT)
-}
-
-type UseCase {
-  name: String!
-  description: String
-
-  soughtBy: [Person] @relationship(type: "SoughtBy", direction: OUT)
-  involves: [Repository] @relationship(type: "Involves", direction: OUT)
-}
-
-type Repository {
-  name: String!
-  description: String
-}
-
-type Product {
-  name: String!
-  description: String
-
-  tutorials: [Tutorial] @relationship(type: "Tutorial", direction: OUT)
-  connectors: [Connector] @relationship(type: "HasConnector", direction: OUT)
-}
-
-type Tutorial {
-  name: String!
-  description: String
-
-  products: [Product] @relationship(type: "Tutorial", direction: IN)
-}
-
-type Binding {
-  name: String!
-  description: String
-  notes: String
-  probability: PositiveFloat
-
-  releases: [Release] @relationship(type: "HasRelease", direction: OUT)
-  commits: [Connector] @relationship(type: "CommitsConnector", direction: OUT)
-}
-
-type Feature {
-  name: String!
-  description: String
-
-  exhibits: [Feature] @relationship(type: "BindingExhibits", direction: OUT)
-}
-
-type Release {
-  name: String!
-  description: String
-}
-
-type Epic {
-  name: String!
-  description: String
-  jiraId: String
-}
-
-type Connector {
-  name: String!
-  description: String
-
-  offersCRUD: [Repository] @relationship(type: "OffersCRUD", direction: OUT)
-  realizes: [Connector] @relationship(type: "RealizesEpic", direction: OUT)
+type Query
+{
+  authors(): [Person]
+    @cypher( statement: """
+    MATCH (p:Person) WHERE { p.queries > 0 } RETURN p
+    """)
 }
 `
