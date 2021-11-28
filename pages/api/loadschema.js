@@ -2,8 +2,6 @@ import {gql} from "graphql-tag"
 
 export const typeDefs = 
 gql`
-scalar DateTime
-
 scalar URL
 scalar EmailAddress
 scalar PositiveFloat
