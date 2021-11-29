@@ -21,7 +21,7 @@ type SyndeiaQuery {
   disciplines: [Discipline] @relationship(type: "Concerns", direction: OUT)
 
   authors: [Person]
-    @cypher( statement: "MATCH (q:SyndeiaQuery)-[:CreatedByRole]->(e:EmploysInRole)-[:FillsRole]->(p:Person) return p"
+    @cypher( statement: "MATCH (this)-[:CreatedByRole]->(e:EmploysInRole)-[:FillsRole]->(p:Person) return distinct p"
     )
 }
 
@@ -37,7 +37,7 @@ type EmploysInRole {
   name: String!
   description: String
 
-  company: Company! @relationship(type: "Has", direction: IN)
+  company: Company! @relationship(type: "HasStaffedRole", direction: IN)
   role: Role! @relationship(type: "FilledRole", direction: OUT)
   person: Person! @relationship(type: "FillsRole", direction: OUT)
 
