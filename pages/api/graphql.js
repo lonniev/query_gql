@@ -21,7 +21,7 @@ const apolloServer = new ApolloServer(
     playground: true,
     introspection: true,
     plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
-    apollo: { key: process.env.APOLLO_KEY, graphRef: `${process.env.APOLLO_ID}@current`, graphId: process.env.APOLLO_GRAPH_ID }
+    apollo: { key: process.env.APOLLO_KEY, graphRef: `${process.env.APOLLO_ID}@current` }
   }
 );
 
