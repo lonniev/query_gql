@@ -40,6 +40,8 @@ type EmploysInRole {
   company: Company! @relationship(type: "Has", direction: IN)
   role: Role! @relationship(type: "FilledRole", direction: OUT)
   person: Person! @relationship(type: "FillsRole", direction: OUT)
+
+  queryCreations: [SyndeiaQuery] @relationship(type: "CreatedByRole", direction: IN)
 }
 
 type Role {
