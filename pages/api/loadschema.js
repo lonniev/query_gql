@@ -63,7 +63,7 @@ type Person {
   email: EmailAddress
   notes: String
 
-  fillsRole: [EmploysInRole] @relationship(type: "FillsRole", direction: OUT)
+  fillsRole: [EmploysInRole] @relationship(type: "FillsRole", direction: IN)
   knows: [Person] @relationship(type: "Knows", direction: OUT)
 
   queries: Int
